@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 OpenClaw AI Agent 可视化面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            color: #00d9ff;
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1.1em;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 217, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 217, 255, 0.2);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .card-subtitle {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .card-desc {
+            color: #aaa;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+        
+        .tag-primary {
+            background: rgba(0, 217, 255, 0.2);
+            color: #00d9ff;
+        }
+        
+        .tag-success {
+            background: rgba(0, 255, 135, 0.2);
+            color: #00ff87;
+        }
+        
+        .tag-warning {
+            background: rgba(255, 183, 0, 0.2);
+            color: #ffb700;
+        }
+        
+        .tag-purple {
+            background: rgba(155, 89, 255, 0.2);
+            color: #9b59ff;
+        }
+        
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            padding: 16px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #00d9ff;
+        }
+        
+        .stat-label {
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff, #0099cc);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #00f5ff, #00b8e6);
+            transform: scale(1.02);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin: 40px 0 20px;
+            font-size: 1.5em;
+            color: #fff;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .workflow-visual {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px auto;
+            max-width: 1200px;
+        }
+        
+        .workflow-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-node {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(0, 153, 204, 0.1));
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 12px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 140px;
+        }
+        
+        .flow-node.active {
+            border-color: #00d9ff;
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+        }
+        
+        .flow-node-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+        
+        .flow-node-title {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        
+        .flow-node-desc {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #00d9ff;
+        }
+        
+        .quick-actions {
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px auto;
+            max-width: 800px;
+        }
+        
+        .quick-actions h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #00d9ff;
+        }
+        
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        
+        .quick-btn {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        .quick-btn:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: rgba(0, 217, 255, 0.4);
+        }
+        
+        .quick-btn-icon {
+            margin-right: 8px;
+        }
+        
+        .status-bar {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin: 20px auto;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff87;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.warning {
+            background: #ffb700;
+        }
+        
+        .status-dot.error {
+            background: #ff4757;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #555;
+            font-size: 0.85em;
+        }
+        
+        .github-link {
+            color: #00d9ff;
+            text-decoration: none;
+        }
+        
+        .github-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-flow {
+                flex-direction: column;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+            
+            .status-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 OpenClaw AI Agent 可视化面板</h1>
+        <p>工作流可视化 · 追踪监控 · 效率提升</p>
+    </div>
+    
+    <div class="status-bar">
+        <div class="status-item">
+            <div class="status-dot"></div>
+            <span>OpenClaw 运行中</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot"></div>
+            <span>LangFuse 连接正常</span>
+        </div>
+        <div class="status-item">
+            <div class="status-dot warning"></div>
+            <span>Flowise 待配置</span>
+        </div>
+        <div class="status-item">
+            <span>最后更新: 2026-04-28 12:00</span>
+        </div>
+    </div>
+    
+    <h2 class="section-title">📊 核心工具层</h2>
+    <p class="section-subtitle">AI Agent 工作流可视化的核心组件</p>
+    
+    <div class="grid">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #9b59ff, #8e44ad);">🔭</div>
+                <div>
+                    <div class="card-title">LangFuse</div>
+                    <div class="card-subtitle">LLM 可观测性平台</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                开源 LLM 工程平台，提供 Prompt 管理、执行追踪、数据集管理、自动评估。YC W23 孵化项目，深度集成 OpenTelemetry。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-primary">追踪</span>
+                <span class="tag tag-success">评估</span>
+                <span class="tag tag-warning">自托管</span>
+            </div>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-value">26k+</div>
+                    <div class="stat-label">GitHub Stars</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Python</div>
+                    <div class="stat-label">SDK</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">YC W23</div>
+                    <div class="stat-label">孵化</div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://langfuse.com')">官网</button>
+                <button class="btn btn-secondary" onclick="window.open('https://github.com/langfuse/langfuse')">GitHub</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #00d9ff, #0099cc);">🎨</div>
+                <div>
+                    <div class="card-title">Flowise</div>
+                    <div class="card-subtitle">拖拽式 AI 流程构建</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                Low-code 可视化工具，拖拽式构建 AI 工作流和 Agent。基于 LangChainJS，支持 RAG 流水线、多数据源集成。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-primary">可视化</span>
+                <span class="tag tag-success">低代码</span>
+                <span class="tag tag-purple">RAG</span>
+            </div>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-value">15k+</div>
+                    <div class="stat-label">GitHub Stars</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">JS</div>
+                    <div class="stat-label">SDK</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">v1.x</div>
+                    <div class="stat-label">版本</div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://flowiseai.com')">官网</button>
+                <button class="btn btn-secondary" onclick="window.open('https://github.com/FlowiseAI/Flowise')">GitHub</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #00ff87, #00cc6a);">🔗</div>
+                <div>
+                    <div class="card-title">LangGraph</div>
+                    <div class="card-subtitle">图结构化 Agent 编排</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                LangChain 生态核心，构建具有循环、条件分支的图结构化 Agent。支持断点调试、状态管理、历史追踪。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-primary">工作流</span>
+                <span class="tag tag-success">多步编排</span>
+                <span class="tag tag-warning">调试</span>
+            </div>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-value">企业级</div>
+                    <div class="stat-label">定位</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Python</div>
+                    <div class="stat-label">SDK</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">循环</div>
+                    <div class="stat-label">支持</div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://github.com/langchain-ai/langgraph')">文档</button>
+                <button class="btn btn-secondary" onclick="window.open('https://python.langchain.com/docs/langgraph')">教程</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a5a);">🦞</div>
+                <div>
+                    <div class="card-title">LangGraphics</div>
+                    <div class="card-subtitle">实时执行可视化</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                实时可视化 LangGraph 执行过程，展示 Agent 思维路径。动画展示工作流，支持 LangFuse/LangSmith 集成。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-primary">实时</span>
+                <span class="tag tag-success">动画</span>
+                <span class="tag tag-purple">思维可视化</span>
+            </div>
+            <div class="card-stats">
+                <div class="stat">
+                    <div class="stat-value">95</div>
+                    <div class="stat-label">GitHub Stars</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">TS</div>
+                    <div class="stat-label">SDK</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">新锐</div>
+                    <div class="stat-label">项目</div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://github.com/proactive-agent/langgraphics')">GitHub</button>
+                <button class="btn btn-secondary" onclick="window.open('https://www.npmjs.com/package/langgraphics')">NPM</button>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="section-title">🔄 工作流架构</h2>
+    <p class="section-subtitle">从数据输入到结果输出的完整链路</p>
+    
+    <div class="workflow-visual">
+        <div class="workflow-flow">
+            <div class="flow-node active">
+                <div class="flow-node-icon">📥</div>
+                <div class="flow-node-title">数据源</div>
+                <div class="flow-node-desc">文档/聊天/爬虫</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+                <div class="flow-node-icon">🔧</div>
+                <div class="flow-node-title">Flowise</div>
+                <div class="flow-node-desc">流程编排</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+                <div class="flow-node-icon">🧠</div>
+                <div class="flow-node-title">LangGraph</div>
+                <div class="flow-node-desc">Agent 决策</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+                <div class="flow-node-icon">🦞</div>
+                <div class="flow-node-title">LangGraphics</div>
+                <div class="flow-node-desc">可视化</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+                <div class="flow-node-icon">📊</div>
+                <div class="flow-node-title">LangFuse</div>
+                <div class="flow-node-desc">追踪评估</div>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-node">
+                <div class="flow-node-icon">📤</div>
+                <div class="flow-node-title">输出</div>
+                <div class="flow-node-desc">结果/报告</div>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="section-title">⚡ 快速操作</h2>
+    <p class="section-subtitle">一键启动常用功能</p>
+    
+    <div class="quick-actions">
+        <h3>🚀 快捷面板</h3>
+        <div class="quick-grid">
+            <button class="quick-btn" onclick="window.open('https://langfuse.com/docs')">
+                <span class="quick-btn-icon">📖</span> LangFuse 文档
+            </button>
+            <button class="quick-btn" onclick="window.open('https://flowiseai.com/#demo')">
+                <span class="quick-btn-icon">🎮</span> Flowise 在线体验
+            </button>
+            <button class="quick-btn" onclick="window.open('https://github.com/proactive-agent/langgraphics')">
+                <span class="quick-btn-icon">🦞</span> LangGraphics Demo
+            </button>
+            <button class="quick-btn" onclick="window.open('https://python.langchain.com/docs/langgraph')">
+                <span class="quick-btn-icon">📚</span> LangGraph 教程
+            </button>
+            <button class="quick-btn" onclick="window.open('https://github.com/langfuse/langfuse/blob/main/README.md')">
+                <span class="quick-btn-icon">⚙️</span> LangFuse 部署指南
+            </button>
+            <button class="quick-btn" onclick="window.open('https://github.com/FlowiseAI/Flowise/blob/main/README.md')">
+                <span class="quick-btn-icon">🐳</span> Flowise Docker 部署
+            </button>
+        </div>
+    </div>
+    
+    <h2 class="section-title">🛠️ 部署方案推荐</h2>
+    
+    <div class="grid">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #00d9ff, #0099cc);">🚀</div>
+                <div>
+                    <div class="card-title">轻量级方案</div>
+                    <div class="card-subtitle">个人/小团队</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                最小化部署，完整观测能力，适合个人开发者和小团队使用。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-success">推荐</span>
+                <span class="tag tag-primary">1GB+ RAM</span>
+            </div>
+            <div style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                <code style="color: #00d9ff; font-size: 0.85em;">
+                    LangFuse + LangGraphics
+                </code>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://langfuse.com/docs')">部署文档</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #ff6b6b, #ee5a5a);">🏢</div>
+                <div>
+                    <div class="card-title">完整企业级方案</div>
+                    <div class="card-subtitle">企业/大型团队</div>
+                </div>
+            </div>
+            <p class="card-desc">
+                全链路追踪，复杂工作流编排，可视化设计，适合企业级应用。
+            </p>
+            <div class="card-tags">
+                <span class="tag tag-warning">企业级</span>
+                <span class="tag tag-primary">4GB+ RAM</span>
+            </div>
+            <div style="margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                <code style="color: #00d9ff; font-size: 0.85em;">
+                    LangFuse + LangGraph + Flowise + LangGraphics
+                </code>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="window.open('https://github.com/langfuse/langfuse/blob/main/docs/deploy/docker-compose.md')">部署文档</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>🧠 OpenClaw AI Agent 可视化面板 v1.0</p>
+        <p>基于 2026-04-28 调研 · LangFuse · Flowise · LangGraph · LangGraphics</p>
+        <p style="margin-top: 10px;">
+            <a href="https://github.com/langfuse/langfuse" class="github-link">LangFuse</a> · 
+            <a href="https://github.com/FlowiseAI/Flowise" class="github-link">Flowise</a> · 
+            <a href="https://github.com/langchain-ai/langgraph" class="github-link">LangGraph</a> · 
+            <a href="https://github.com/proactive-agent/langgraphics" class="github-link">LangGraphics</a>
+        </p>
+    </div>
+</body>
+</html>
